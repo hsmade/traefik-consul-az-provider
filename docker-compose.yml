@@ -1,0 +1,67 @@
+services:
+  consul:
+    image: hashicorp/consul:1.19.0
+    ports:
+      - "8500:8500"
+    command:
+      - agent
+      - -dev
+      - -client
+      - 0.0.0.0
+  nomad:
+    image: hashicorp/nomad:1.8.0
+    ports:
+      - "4646:4646"
+    privileged: true
+    command:
+      - agent
+      - -dev
+      - -bind
+      - 0.0.0.0
+      - -consul-address
+      - consul:8500
+      - -config
+      - /nomad-config.hcl
+    environment:
+      - NOMAD_SKIP_DOCKER_IMAGE_WARN=1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - /tmp:/tmp
+      - /sys:/sys
+      - "./nomad-config.hcl:/nomad-config.hcl"
+    depends_on:
+      - consul
+  nomad-schedule:
+    depends_on:
+      - nomad
+    image: hashicorp/nomad:1.8.0
+    command:
+      - run
+      - -address
+      - http://nomad:4646
+      - /nomad-job.hcl
+    volumes:
+      - "./nomad-job.hcl:/nomad-job.hcl"
+
+  traefik:
+    image: traefik/traefik:experimental-v3.0
+    ports:
+      - "80:80"
+      - "8080:8080"
+    command:
+      - "--api"
+      - "--api.insecure"
+      - "--experimental.localplugins.consulcataloglocal.modulename=github.com/hsmade/traefik-consul-az-provider"
+      - "--providers.plugin.consulcataloglocal.localsubnet=127.0.0.1/32"
+      - "--entryPoints.web.address=:80"
+      - "--providers.consulcatalog=true"
+      - "--providers.consulcatalog.endpoint.address=consul:8500"
+      - "--providers.consulcatalog.exposedByDefault=true"
+      - "--log"
+      - "--log.level=DEBUG"
+      - "--accesslog"
+    volumes:
+      - "./:/plugins-local/src/github.com/hsmade/traefik-consul-az-provider"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    depends_on:
+      - consul
