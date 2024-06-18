@@ -3,23 +3,25 @@ package traefik_consul_az_provider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/traefik/genconf/dynamic"
 	"github.com/traefik/genconf/dynamic/tls"
+	"github.com/traefik/traefik/v3/pkg/provider/consulcatalog"
 )
 
 // Config the plugin configuration.
 type Config struct {
-	PollInterval string `json:"pollInterval,omitempty"`
+	LocalSubnet   string                      `json:"localsubnet,omitempty"`
+	ConsulCatalog consulcatalog.Configuration `json:"consulcatalog,omitempty"`
 }
 
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
 	return &Config{
-		PollInterval: "5s", // 5 * time.Second
+		LocalSubnet:   "127.0.0.1/32",
+		ConsulCatalog: consulcatalog.Configuration{},
 	}
 }
 
@@ -33,22 +35,22 @@ type Provider struct {
 
 // New creates a new Provider plugin.
 func New(ctx context.Context, config *Config, name string) (*Provider, error) {
-	pi, err := time.ParseDuration(config.PollInterval)
-	if err != nil {
-		return nil, err
-	}
+	//pi, err := time.ParseDuration(config.PollInterval)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return &Provider{
-		name:         name,
-		pollInterval: pi,
+		name: name,
+		//pollInterval: pi,
 	}, nil
 }
 
 // Init the provider.
 func (p *Provider) Init() error {
-	if p.pollInterval <= 0 {
-		return fmt.Errorf("poll interval must be greater than 0")
-	}
+	//if p.pollInterval <= 0 {
+	//	return fmt.Errorf("poll interval must be greater than 0")
+	//}
 
 	return nil
 }
@@ -72,20 +74,20 @@ func (p *Provider) Provide(cfgChan chan<- json.Marshaler) error {
 }
 
 func (p *Provider) loadConfiguration(ctx context.Context, cfgChan chan<- json.Marshaler) {
-	ticker := time.NewTicker(p.pollInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case t := <-ticker.C:
-			configuration := generateConfiguration(t)
-
-			cfgChan <- &dynamic.JSONPayload{Configuration: configuration}
-
-		case <-ctx.Done():
-			return
-		}
-	}
+	//ticker := time.NewTicker(p.pollInterval)
+	//defer ticker.Stop()
+	//
+	//for {
+	//	select {
+	//	case t := <-ticker.C:
+	//		configuration := generateConfiguration(t)
+	//
+	//		cfgChan <- &dynamic.JSONPayload{Configuration: configuration}
+	//
+	//	case <-ctx.Done():
+	//		return
+	//	}
+	//}
 }
 
 // Stop to stop the provider and the related go routines.
