@@ -1,9 +1,9 @@
 consul:
-	wget -O consul.zip https://releases.hashicorp.com/consul/1.19.0/consul_1.19.0_$$(uname -o| tr '[A-Z]' '[a-z]')_$$(uname -m).zip
+	wget -O consul.zip https://releases.hashicorp.com/consul/1.19.0/consul_1.19.0_$$(uname -o| tr '[A-Z]' '[a-z]')_$$(uname -m|sed -e 's/x86_64/amd64/').zip
 	unzip consul.zip consul
 	rm consul.zip
 traefik:
-	wget -O traefik.tgz https://github.com/traefik/traefik/releases/download/v3.0.2/traefik_v3.0.2_$$(uname -o| tr '[A-Z]' '[a-z]')_$$(uname -m).tar.gz
+	wget -O traefik.tgz https://github.com/traefik/traefik/releases/download/v3.0.2/traefik_v3.0.2_$$(uname -o| tr '[A-Z]' '[a-z]')_$$(uname -m|sed -e 's/x86_64/amd64/').tar.gz
 	tar xzf traefik.tgz traefik
 	rm traefik.tgz
 hello:
